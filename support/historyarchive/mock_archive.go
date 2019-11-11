@@ -47,6 +47,10 @@ func (b *MockArchiveBackend) GetFile(pth string) (io.ReadCloser, error) {
 	return ioutil.NopCloser(bytes.NewReader(buf)), nil
 }
 
+func (b *MockArchiveBackend) GetFileNoCache(pth string) (io.ReadCloser, error) {
+	return b.GetFile(pth)
+}
+
 func (b *MockArchiveBackend) PutFile(pth string, in io.ReadCloser) error {
 	b.mutex.Lock()
 	defer b.mutex.Unlock()

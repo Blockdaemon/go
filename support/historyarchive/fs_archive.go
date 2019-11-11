@@ -19,6 +19,10 @@ func (b *FsArchiveBackend) GetFile(pth string) (io.ReadCloser, error) {
 	return os.Open(path.Join(b.prefix, pth))
 }
 
+func (b *FsArchiveBackend) GetFileNoCache(pth string) (io.ReadCloser, error) {
+	return b.GetFile(pth)
+}
+
 func (b *FsArchiveBackend) Exists(pth string) (bool, error) {
 	pth = path.Join(b.prefix, pth)
 	_, err := os.Stat(pth)

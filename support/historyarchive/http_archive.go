@@ -11,6 +11,8 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strconv"
+	"time"
 
 	"github.com/stellar/go/support/errors"
 )
@@ -30,10 +32,14 @@ func checkResp(r *http.Response) error {
 	}
 }
 
-func (b *HttpArchiveBackend) GetFile(pth string) (io.ReadCloser, error) {
+func (b *HttpArchiveBackend) getFile(pth string, nocache bool) (io.ReadCloser, error) {
 	var derived url.URL = b.base
 	derived.Path = path.Join(derived.Path, pth)
-	req, err := http.NewRequest("GET", derived.String(), nil)
+	var URL = derived.String()
+	if nocache {
+		URL += "?" + strconv.FormatInt(time.Now().Unix(), 10)
+	}
+	req, err := http.NewRequest("GET", URL, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -53,6 +59,14 @@ func (b *HttpArchiveBackend) GetFile(pth string) (io.ReadCloser, error) {
 		return nil, err
 	}
 	return resp.Body, nil
+}
+
+func (b *HttpArchiveBackend) GetFile(pth string) (io.ReadCloser, error) {
+	return b.getFile(pth, false)
+}
+
+func (b *HttpArchiveBackend) GetFileNoCache(pth string) (io.ReadCloser, error) {
+	return b.getFile(pth, true)
 }
 
 func (b *HttpArchiveBackend) Head(pth string) (*http.Response, error) {

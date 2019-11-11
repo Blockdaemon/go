@@ -44,6 +44,7 @@ type ArchiveBackend interface {
 	Exists(path string) (bool, error)
 	Size(path string) (int64, error)
 	GetFile(path string) (io.ReadCloser, error)
+	GetFileNoCache(path string) (io.ReadCloser, error)
 	PutFile(path string, in io.ReadCloser) error
 	ListFiles(path string) (chan string, chan error)
 	CanListFiles() bool
@@ -51,6 +52,7 @@ type ArchiveBackend interface {
 
 type ArchiveInterface interface {
 	GetPathHAS(path string) (HistoryArchiveState, error)
+	GetPathHASNoCache(path string) (HistoryArchiveState, error)
 	PutPathHAS(path string, has HistoryArchiveState, opts *CommandOptions) error
 	BucketExists(bucket Hash) (bool, error)
 	CategoryCheckpointExists(cat string, chk uint32) (bool, error)
@@ -102,6 +104,18 @@ func (a *Archive) GetPathHAS(path string) (HistoryArchiveState, error) {
 	return has, err
 }
 
+func (a *Archive) GetPathHASNoCache(path string) (HistoryArchiveState, error) {
+	var has HistoryArchiveState
+	rdr, err := a.backend.GetFileNoCache(path)
+	if err != nil {
+		return has, err
+	}
+	defer rdr.Close()
+	dec := json.NewDecoder(rdr)
+	err = dec.Decode(&has)
+	return has, err
+}
+
 func (a *Archive) PutPathHAS(path string, has HistoryArchiveState, opts *CommandOptions) error {
 	exists, err := a.backend.Exists(path)
 	if err != nil {
@@ -128,7 +142,7 @@ func (a *Archive) CategoryCheckpointExists(cat string, chk uint32) (bool, error)
 }
 
 func (a *Archive) GetRootHAS() (HistoryArchiveState, error) {
-	return a.GetPathHAS(rootHASPath)
+	return a.GetPathHASNoCache(rootHASPath)
 }
 
 func (a *Archive) GetCheckpointHAS(chk uint32) (HistoryArchiveState, error) {

@@ -44,6 +44,10 @@ func (b *S3ArchiveBackend) GetFile(pth string) (io.ReadCloser, error) {
 	return resp.Body, nil
 }
 
+func (b *S3ArchiveBackend) GetFileNoCache(pth string) (io.ReadCloser, error) {
+	return b.GetFile(pth)
+}
+
 func (b *S3ArchiveBackend) Head(pth string) (*http.Response, error) {
 	params := &s3.HeadObjectInput{
 		Bucket: aws.String(b.bucket),

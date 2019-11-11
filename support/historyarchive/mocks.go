@@ -14,6 +14,10 @@ func (m *MockArchive) GetPathHAS(path string) (HistoryArchiveState, error) {
 	return a.Get(0).(HistoryArchiveState), a.Error(1)
 }
 
+func (m *MockArchive) GetPathHASNoCache(path string) (HistoryArchiveState, error) {
+	return m.GetPathHAS(path)
+}
+
 func (m *MockArchive) PutPathHAS(path string, has HistoryArchiveState, opts *CommandOptions) error {
 	a := m.Called(path, has, opts)
 	return a.Error(0)
